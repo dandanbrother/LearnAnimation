@@ -32,6 +32,7 @@
         [self initDotView];
         [self initShapeLayer];
         [self updateShapeLayerPath];
+        self.backgroundColor = [UIColor blueColor];
     }
     return self;
 }
@@ -69,26 +70,28 @@
     [self addSubview:self.dot];
 }
 
-- (void)handlePanAction:(UIPanGestureRecognizer *)recoginzer {
+- (void)handlePanAction:(UIPanGestureRecognizer *)recognizer {
     if (!_isAnimating) {
-        if (recoginzer.state == UIGestureRecognizerStateChanged) {
-            CGPoint currentPoint = [recoginzer translationInView:self];
+        if (recognizer.state == UIGestureRecognizerStateChanged) {
+            //X坐标为当前手势位置的X，Y坐标从顶部开始计算
             
-            //currentPoint 以self的左上角为起点,所以_dot.x要加半个屏幕的宽度，才能在中点
-            _dotX = WIDTH / 2 + currentPoint.x;
-            _dotY = currentPoint.y * 0.7;
+            CGPoint currentPointX = [recognizer locationInView:self];
+            CGPoint currentPointY = [recognizer translationInView:self];
+            _dotX = currentPointX.x;
+            _dotY = currentPointY.y * 0.7;
             _dot.frame = CGRectMake(_dotX, _dotY, _dot.frame.size.width, _dot.frame.size.height);
+    
             [self updateShapeLayerPath];
             
         }
-        else if (recoginzer.state == UIGestureRecognizerStateCancelled ||
-                 recoginzer.state == UIGestureRecognizerStateEnded ||
-                 recoginzer.state == UIGestureRecognizerStateFailed)
+        else if (recognizer.state == UIGestureRecognizerStateCancelled ||
+                 recognizer.state == UIGestureRecognizerStateEnded ||
+                 recognizer.state == UIGestureRecognizerStateFailed)
         {
             // 手势结束时,_shapeLayer返回原状并产生弹簧动效
             _isAnimating = YES;
             _disPlayLink.paused = NO; //开启DisplayLink 执行calculatePath方法
-            [UIView animateWithDuration:0.6 delay:0 usingSpringWithDamping:1.0 initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            [UIView animateWithDuration:0.4 delay:0 usingSpringWithDamping:1.0 initialSpringVelocity:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
                 _dot.frame = CGRectMake(WIDTH / 2, 0, 3, 3);
             } completion:^(BOOL finished) {
                 if (finished) {
